@@ -9,7 +9,6 @@ A production-style RESTful backend built with Spring Boot for managing users, or
 - Docker
 
 ## Data Model
-```markdown
 This ER diagram represents the relational data model for the Order Management API.
 
 ```mermaid
