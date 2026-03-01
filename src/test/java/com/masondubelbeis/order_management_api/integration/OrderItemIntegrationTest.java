@@ -96,12 +96,18 @@ class OrderItemIntegrationTest extends BaseIntegrationTest {
         o.setUser(u);
         o = orderRepository.save(o);
 
+        long before = orderItemRepository.count();
+
         Order finalO = o;
         Product finalP = p;
-        assertThrows(IllegalStateException.class, () -> orderItemService.addItem(finalO.getId(), finalP.getId(), 2));
+        assertThrows(IllegalStateException.class,
+                () -> orderItemService.addItem(finalO.getId(), finalP.getId(), 2));
 
         Product updated = productRepository.findById(p.getId()).orElseThrow();
         assertEquals(1, updated.getInventoryQty());
+
+        long after = orderItemRepository.count();
+        assertEquals(before, after);
     }
 
     @Test
@@ -123,12 +129,17 @@ class OrderItemIntegrationTest extends BaseIntegrationTest {
         o.setUser(u);
         o = orderRepository.save(o);
 
+        long before = orderItemRepository.count();
+
         Order finalO = o;
         Product finalP = p;
         assertThrows(IllegalStateException.class, () -> orderItemService.addItem(finalO.getId(), finalP.getId(), 1));
 
         Product updated = productRepository.findById(p.getId()).orElseThrow();
         assertEquals(10, updated.getInventoryQty());
+
+        long after = orderItemRepository.count();
+        assertEquals(before, after);
     }
 
 }
