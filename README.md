@@ -37,6 +37,10 @@ This project is designed to:
 ✅ Transactional integrity using @Transactional
 ✅ Integration testing with Testcontainers
 ✅ Failure-path side-effect protection (no unwanted DB writes)
+✅ Checkout workflow implemented (OrderService.checkout(orderId))
+✅ Order lifecycle rule enforced: only NEW orders can be checked out → transitions to PAID
+✅ Business validation added (reject checkout if order not NEW)
+✅ DTO-based checkout response (OrderResponse returned instead of entity)
 
 ### 🔄 In Progress
 
@@ -127,13 +131,14 @@ curl http://localhost:8080/health
 
 ## 📌 Example Endpoints
 
-- POST  /users
-- GET   /users  
-- POST  /products
-- GET   /products
-- POST  /orders/user/{userId}
-- POST  /order-items?orderId=&productId=&quantity=
-- GET   /orders
+- POST /users
+- GET /users  
+- POST /products
+- GET /products
+- POST /orders/user/{userId}
+- POST /orders/{orderId}/checkout
+- POST /order-items?orderId=&productId=&quantity=
+- GET /orders
 
 ## 📦 DTO Example
 
@@ -145,13 +150,29 @@ Create User Request
 }
 ```
 
-User Response
+User Response:
 ```json
 {
   "id": 1,
   "email": "user@example.com",
   "name": "John Doe",
   "createdAt": "2026-02-26T18:10:00Z"
+}
+```
+
+## ✅ Checkout Example
+
+```bash
+curl -X POST http://localhost:8080/orders/1/checkout
+```
+
+Checkout response:
+```json
+{
+  "id": 1,
+  "status": "PAID",
+  "createdAt": "2026-03-01T01:15:00Z",
+  "userId": 1
 }
 ```
 
