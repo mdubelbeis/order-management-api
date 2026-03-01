@@ -4,6 +4,9 @@ import com.masondubelbeis.order_management_api.domain.Order;
 import com.masondubelbeis.order_management_api.domain.OrderItem;
 import com.masondubelbeis.order_management_api.domain.OrderStatus;
 import com.masondubelbeis.order_management_api.domain.Product;
+import com.masondubelbeis.order_management_api.exception.BadRequestException;
+import com.masondubelbeis.order_management_api.exception.ConflictException;
+import com.masondubelbeis.order_management_api.exception.NotFoundException;
 import com.masondubelbeis.order_management_api.repository.OrderItemRepository;
 import com.masondubelbeis.order_management_api.repository.OrderRepository;
 import com.masondubelbeis.order_management_api.repository.ProductRepository;
@@ -27,26 +30,26 @@ public class OrderItemService {
 
     @Transactional
     public void addItem(Long orderId, Long productId, int quantity) {
+
         if (quantity <= 0) {
-            throw new IllegalArgumentException("quantity must be > 0");
+            throw new BadRequestException("quantity must be > 0");
         }
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+                .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
         // Only allow items to be added to NEW orders
         if (order.getStatus() != null && order.getStatus() != OrderStatus.NEW) {
-            throw new IllegalStateException("Cannot add items to order in status: " + order.getStatus());
+            throw new ConflictException("Cannot add items to order in status: " + order.getStatus());
         }
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+                .orElseThrow(() -> new NotFoundException("Product not found: " + productId));
 
-        Integer current = product.getInventoryQty();
-        int currentQty = (current == null) ? 0 : current;
+        int currentQty = (product.getInventoryQty() == null) ? 0 : product.getInventoryQty();
 
         if (currentQty < quantity) {
-            throw new IllegalStateException("Insufficient inventory. Have=" + currentQty + " requested=" + quantity);
+            throw new ConflictException("Insufficient inventory. Have=" + currentQty + " requested=" + quantity);
         }
 
         // decrement inventory
