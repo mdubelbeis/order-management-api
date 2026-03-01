@@ -122,7 +122,6 @@ docker compose up -d
 curl http://localhost:8080/health
 ```
 
-
 ## 📌 Example Endpoints
 
 - POST  /users
@@ -164,20 +163,9 @@ User Response
 }
 ```
 
-## 🔜 Planned Enhancements
+## ✅ Tests
 
-- Inventory validation rules
-- Order lifecycle enforcement
-- Pagination support
-- Integration testing
-- Swagger/OpenAPI documentation
+Run unit + integration tests: Integration tests use Testcontainers and require Docker Desktop running.
 
-## 🗺 Roadmap / Backlog
-
-### Phase 3 – Business Enhancements
-- [ ] Order cancellation restores inventory
-- [ ] Order total calculation and aggregation logic
-- [ ] Pagination and sorting for list endpoints
-- [ ] Swagger/OpenAPI documentation
-- [ ] Integration testing with Testcontainers
-- [ ] JWT-based authentication and authorization
+```bash
+./mvnw clean test
