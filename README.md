@@ -23,17 +23,20 @@ This project is designed to:
 
 ## 🚀 Current Status (Week 2-DTO Layer Implemented)
 
-✅ Dockerized PostgreSQL  
-✅ Spring Boot application running  
-✅ JPA domain model implemented  
-✅ Relational mappings (User → Order → OrderItem → Product)  
-✅ Basic CRUD endpoints (Users, Products, Orders, OrderItems)  
+✅ Dockerized PostgreSQL
+✅ Spring Boot application running
+✅ JPA domain model implemented
+✅ Relational mappings (User → Order → OrderItem → Product)
+✅ CRUD endpoints (Users, Products, Orders, OrderItems)
+✅ DTO request/response pattern
 ✅ Global exception handling
-✅ Standardized API error responses
-✅ Bean validation using `jakarta.validation`
-✅ Request/Response DTO pattern implemented
-✅ Database schema auto-generated and verified  
-✅ Health endpoint available
+✅ Standardized JSON API error responses
+✅ Bean validation using jakarta.validation
+✅ Service-layer business logic
+✅ Inventory enforcement
+✅ Transactional integrity using @Transactional
+✅ Integration testing with Testcontainers
+✅ Failure-path side-effect protection (no unwanted DB writes)
 
 ### 🔄 In Progress
 
@@ -98,8 +101,8 @@ erDiagram
   PRODUCTS ||--o{ ORDER_ITEMS : referenced_by
 ```
 
-## 🛠 Tech Stac
-k
+## 🛠 Tech Stack
+
 - Java 21
 - Spring Boot
 - Spring Data JPA
@@ -128,9 +131,9 @@ curl http://localhost:8080/health
 - GET   /users  
 - POST  /products
 - GET   /products
-- POST /orders/user/{userId}
-- POST /order-items?orderId=&productId=&quantity=
-- GET /orders
+- POST  /orders/user/{userId}
+- POST  /order-items?orderId=&productId=&quantity=
+- GET   /orders
 
 ## 📦 DTO Example
 
@@ -152,20 +155,41 @@ User Response
 }
 ```
 
-##  ❗Example Error Response
+##  ❗API Error Handling
 ```json
 {
-"timestamp": "2026-02-26T18:15:00Z",
-"status": 400,
-"error": "Bad Request",
-"message": "Email already exists: user@example.com",
-"path": "/users"
+  "timestamp": "2026-02-26T18:15:00Z",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Insufficient inventory. Have=1 requested=2",
+  "path": "/orders/1/items"
 }
 ```
 
-## ✅ Tests
+## 🧪 Testing Strategy
 
-Run integration tests: Integration tests use Testcontainers and require Docker Desktop running.
+Integration Testing
+- Real PostgreSQL database via Testcontainers
+- @SpringBootTest
+- Transactional validation
+- Inventory side-effect assertion
+- Failure-path verification
+- Custom exception verification
+
 
 ```bash
 ./mvnw clean test
+```
+
+## 📈 Roadmap
+
+- [x]Core domain modeling
+- [x]DTO pattern
+- [x]Global exception handling
+- [x]Inventory enforcement
+- [x]Integration testing
+- [x]OpenAPI documentation
+- []REST endpoint refinement for adding items
+- []MockMvc controller tests
+- []Order checkout workflow
+- []Pagination & sorting
