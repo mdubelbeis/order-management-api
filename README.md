@@ -183,13 +183,13 @@ Integration Testing
 
 ## 📈 Roadmap
 
-- [x]Core domain modeling
-- [x]DTO pattern
-- [x]Global exception handling
-- [x]Inventory enforcement
-- [x]Integration testing
-- [x]OpenAPI documentation
-- []REST endpoint refinement for adding items
-- []MockMvc controller tests
-- []Order checkout workflow
-- []Pagination & sorting
+-[x]Core domain modeling
+-[x]DTO pattern
+-[x]Global exception handling
+-[x]Inventory enforcement
+-[x]Integration testing
+-[x]OpenAPI documentation
+-[ ]REST endpoint refinement for adding items
+-[ ]MockMvc controller tests
+-[ ]Order checkout workflow
+-[ ]Pagination & sorting
