@@ -94,8 +94,6 @@ erDiagram
 - Docker
 - Maven
 
-
-
 ## 🧪 Running Locally
 
 1️⃣ Start database
@@ -119,6 +117,8 @@ curl http://localhost:8080/health
 - POST /orders/user/{userId}
 - POST /order-items?orderId=&productId=&quantity=
 - GET /orders
+
+##  ❗Example Error Response
 
 ## 🔜 Planned Enhancements
 
