@@ -3,6 +3,8 @@ package com.masondubelbeis.order_management_api.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "order_items")
 @Getter
@@ -28,5 +30,5 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(nullable = false)
-    private Double priceAtPurchase;
+    private BigDecimal priceAtPurchase;
 }

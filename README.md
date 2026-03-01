@@ -171,3 +171,13 @@ User Response
 - Pagination support
 - Integration testing
 - Swagger/OpenAPI documentation
+
+## 🗺 Roadmap / Backlog
+
+### Phase 3 – Business Enhancements
+- [ ] Order cancellation restores inventory
+- [ ] Order total calculation and aggregation logic
+- [ ] Pagination and sorting for list endpoints
+- [ ] Swagger/OpenAPI documentation
+- [ ] Integration testing with Testcontainers
+- [ ] JWT-based authentication and authorization
