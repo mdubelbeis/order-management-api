@@ -1,7 +1,9 @@
 package com.masondubelbeis.order_management_api.controller;
 
-import com.masondubelbeis.order_management_api.domain.User;
-import com.masondubelbeis.order_management_api.repository.UserRepository;
+import com.masondubelbeis.order_management_api.dto.CreateUserRequest;
+import com.masondubelbeis.order_management_api.dto.UserResponse;
+import com.masondubelbeis.order_management_api.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,19 +12,19 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userRepository.save(user);
+    public UserResponse create(@Valid @RequestBody CreateUserRequest req) {
+        return userService.create(req);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponse> getAll() {
+        return userService.getAll();
     }
 }

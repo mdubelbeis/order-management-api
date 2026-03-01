@@ -1,7 +1,9 @@
 package com.masondubelbeis.order_management_api.controller;
 
-import com.masondubelbeis.order_management_api.domain.Product;
-import com.masondubelbeis.order_management_api.repository.ProductRepository;
+import com.masondubelbeis.order_management_api.dto.CreateProductRequest;
+import com.masondubelbeis.order_management_api.dto.ProductResponse;
+import com.masondubelbeis.order_management_api.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,19 +12,19 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productRepository.save(product);
+    public ProductResponse create(@Valid @RequestBody CreateProductRequest req) {
+        return productService.create(req);
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAll() {
+        return productService.getAll();
     }
 }
