@@ -21,17 +21,26 @@ This project is designed to:
 - Foreign key constraints enforce referential integrity.
 - Docker is used to isolate database configuration from local machine dependencies.
 
-## 🚀 Current Status (End of Week 1)
+## 🚀 Current Status (Week 2-DTO Layer Implemented)
 
 ✅ Dockerized PostgreSQL  
 ✅ Spring Boot application running  
 ✅ JPA domain model implemented  
 ✅ Relational mappings (User → Order → OrderItem → Product)  
 ✅ Basic CRUD endpoints (Users, Products, Orders, OrderItems)  
+✅ Global exception handling
+✅ Standardized API error responses
+✅ Bean validation using `jakarta.validation`
+✅ Request/Response DTO pattern implemented
 ✅ Database schema auto-generated and verified  
 ✅ Health endpoint available
 
-⚠️ Service layer, validation, and DTOs will be implemented in Week 2.
+### 🔄 In Progress
+
+- Service-layer business logic (inventory enforcement)
+- Order lifecycle rules
+- Pagination
+- Integration testing
 
 ---
 
@@ -39,11 +48,14 @@ This project is designed to:
 
 This project follows a layered architecture:
 
-- Controller Layer – REST endpoints
-- Repository Layer – Spring Data JPA persistence
-- Domain Layer – Entity modeling and relationships
-- PostgreSQL – Relational data store
-- Docker – Containerized local development database
+- **Controller Layer** – Thin REST endpoints
+- **Service Layer** – Business logic and validation
+- **Repository Layer** – Spring Data JPA persistence
+- **Domain Layer** – Entity modeling and relationships
+- **DTO Layer** – Controlled request/response models
+- **Exception Layer** – Centralized API error handling
+- **PostgreSQL** – Relational data store
+- **Docker** – Containerized local development database
 
 ---
 
@@ -86,7 +98,8 @@ erDiagram
   PRODUCTS ||--o{ ORDER_ITEMS : referenced_by
 ```
 
-## 🛠 Tech Stack
+## 🛠 Tech Stac
+k
 - Java 21
 - Spring Boot
 - Spring Data JPA
@@ -112,20 +125,49 @@ curl http://localhost:8080/health
 
 ## 📌 Example Endpoints
 
-- POST /users
-- POST /products
+- POST  /users
+- GET   /users  
+- POST  /products
+- GET   /products
 - POST /orders/user/{userId}
 - POST /order-items?orderId=&productId=&quantity=
 - GET /orders
 
+## 📦 DTO Example
+
+Create User Request
+```json 
+{
+"email": "user@example.com",
+"name": "John Doe"
+}
+```
+
+User Response
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "name": "John Doe",
+  "createdAt": "2026-02-26T18:10:00Z"
+}
+```
+
 ##  ❗Example Error Response
+```json
+{
+"timestamp": "2026-02-26T18:15:00Z",
+"status": 400,
+"error": "Bad Request",
+"message": "Email already exists: user@example.com",
+"path": "/users"
+}
+```
 
 ## 🔜 Planned Enhancements
 
-- Service layer abstraction
-- Inventory validation logic
-- Global exception handling
-- DTO-based response models
+- Inventory validation rules
+- Order lifecycle enforcement
 - Pagination support
 - Integration testing
-- API documentation via Swagger
+- Swagger/OpenAPI documentation
