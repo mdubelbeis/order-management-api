@@ -165,7 +165,7 @@ User Response
 
 ## ✅ Tests
 
-Run unit + integration tests: Integration tests use Testcontainers and require Docker Desktop running.
+Run integration tests: Integration tests use Testcontainers and require Docker Desktop running.
 
 ```bash
 ./mvnw clean test
