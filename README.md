@@ -19,7 +19,7 @@ It enforces business rules such as:
 
 - All rules are implemented inside transactional service boundaries.
 
-## Architecture
+## Architecture 
 This application follows a layered backend architecture:
 
 ### Controller Layer
@@ -40,7 +40,7 @@ Prevents entity leakage and defines stable API contracts.
 ### Exception Layer
 Centralized JSON error handling via @ControllerAdvice.
 
-##Architectural Highlights
+## Architectural Highlights
 - Service-level transaction management using @Transactional
 - Explicit order lifecycle enforcement (NEW → PAID)
 - Failure-path protection (no unintended database writes)
@@ -176,7 +176,7 @@ Docker must be running.
 - Lombok
 - Docker
 
-## What This Demonstrates
+## What This Aims to Demonstrate
 - Understanding of layered backend architecture
 - Proper transaction management
 - Enforcement of domain invariants
