@@ -36,7 +36,7 @@ public class OrderService {
 
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(OrderStatus.NEW); // ensure it’s NEW explicitly if not defaulted
+        order.setStatus(OrderStatus.NEW);
 
         return orderRepository.save(order);
     }

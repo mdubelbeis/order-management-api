@@ -1,172 +1,124 @@
 # Order Management API
+Production-style REST API built with Spring Boot that models a real-world order lifecycle with transactional integrity, inventory enforcement, DTO separation, and structured error handling.
 
-A production-style RESTful backend built with Spring Boot for managing users, orders, products, and inventory with relational modeling and business validation.
+This project demonstrates backend architectural discipline beyond simple CRUD operations.
 
----
+## Overview
+The system manages:
+- Users
+- Products
+- Orders
+- OrderItems
+- Inventory
 
-## 🎯 Project Goals
+It enforces business rules such as:
+- Only NEW orders can be checked out
+- Orders must contain at least one item before checkout
+- Inventory is validated and decremented atomically
+- State transitions are enforced at the service layer
 
-This project is designed to:
+- All rules are implemented inside transactional service boundaries.
 
-- Demonstrate clean relational modeling using JPA
-- Practice layered backend architecture
-- Implement real-world business rules (inventory validation, order lifecycle)
-- Avoid exposing entities directly via REST
-- Incrementally evolve toward production-ready structure
+## Architecture
+This application follows a layered backend architecture:
 
-## 🧠 Design Decisions
+### Controller Layer
+Thin REST endpoints responsible only for HTTP concerns.
 
-- OrderItem is modeled as a join entity rather than a direct many-to-many relationship to allow additional attributes (quantity, priceAtPurchase).
-- BigDecimal is used for monetary values to avoid floating-point precision errors.
-- Foreign key constraints enforce referential integrity.
-- Docker is used to isolate database configuration from local machine dependencies.
+### Service Layer
+Business rules, lifecycle validation, transaction boundaries.
 
-## 🚀 Current Status (Week 2-DTO Layer Implemented)
+### Repository Layer
+Spring Data JPA persistence abstraction.
 
-✅ Dockerized PostgreSQL
-✅ Spring Boot application running
-✅ JPA domain model implemented
-✅ Relational mappings (User → Order → OrderItem → Product)
-✅ CRUD endpoints (Users, Products, Orders, OrderItems)
-✅ DTO request/response pattern
-✅ Global exception handling
-✅ Standardized JSON API error responses
-✅ Bean validation using jakarta.validation
-✅ Service-layer business logic
-✅ Inventory enforcement
-✅ Transactional integrity using @Transactional
-✅ Integration testing with Testcontainers
-✅ Failure-path side-effect protection (no unwanted DB writes)
-✅ Checkout workflow implemented (OrderService.checkout(orderId))
-✅ Order lifecycle rule enforced: only NEW orders can be checked out → transitions to PAID
-✅ Business validation added (reject checkout if order not NEW)
-✅ DTO-based checkout response (OrderResponse returned instead of entity)
+### Domain Layer
+Relational modeling with explicit entity relationships.
 
-### 🔄 In Progress
+### DTO Layer
+Prevents entity leakage and defines stable API contracts.
 
-- Service-layer business logic (inventory enforcement)
-- Order lifecycle rules
-- Pagination
-- Integration testing
+### Exception Layer
+Centralized JSON error handling via @ControllerAdvice.
 
----
+##Architectural Highlights
+- Service-level transaction management using @Transactional
+- Explicit order lifecycle enforcement (NEW → PAID)
+- Failure-path protection (no unintended database writes)
+- Join-entity modeling (OrderItem) instead of naive many-to-many
+- Monetary precision via BigDecimal
+- Database-backed integration tests using Testcontainers
+- Controller slice tests using @WebMvcTest
+- Dockerized PostgreSQL for reproducible local development
 
-## 🧱 Architecture Overview
-
-This project follows a layered architecture:
-
-- **Controller Layer** – Thin REST endpoints
-- **Service Layer** – Business logic and validation
-- **Repository Layer** – Spring Data JPA persistence
-- **Domain Layer** – Entity modeling and relationships
-- **DTO Layer** – Controlled request/response models
-- **Exception Layer** – Centralized API error handling
-- **PostgreSQL** – Relational data store
-- **Docker** – Containerized local development database
-
----
-
-## 🗄 Data Model
-
+## Data Model
 ```mermaid
 erDiagram
-  USERS {
-    bigint id PK
-    varchar email "unique"
-    varchar name
-    timestamp created_at
-  }
-
-  ORDERS {
-    bigint id PK
-    bigint user_id FK
-    varchar status
-    timestamp created_at
-  }
-
-  ORDER_ITEMS {
-    bigint id PK
-    bigint order_id FK
-    bigint product_id FK
-    int quantity
-    decimal price_at_purchase
-  }
-
-  PRODUCTS {
-    bigint id PK
-    varchar sku "unique"
-    varchar name
-    decimal price
-    int inventory_qty
-  }
-
-  USERS ||--o{ ORDERS : places
-  ORDERS ||--o{ ORDER_ITEMS : contains
-  PRODUCTS ||--o{ ORDER_ITEMS : referenced_by
-```
-
-## 🛠 Tech Stack
-
-- Java 21
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- Docker
-- Maven
-
-## 🧪 Running Locally
-
-1️⃣ Start database
-```bash
-docker compose up -d
-```
-2️⃣ Run application
-```bash 
-./mvnw spring-boot:run
-```
-3️⃣ Health check
-```bash
-curl http://localhost:8080/health
-```
-
-## 📌 Example Endpoints
-
-- POST /users
-- GET /users  
-- POST /products
-- GET /products
-- POST /orders/user/{userId}
-- POST /orders/{orderId}/checkout
-- POST /order-items?orderId=&productId=&quantity=
-- GET /orders
-
-## 📦 DTO Example
-
-Create User Request
-```json 
-{
-"email": "user@example.com",
-"name": "John Doe"
+USERS {
+bigint id PK
+varchar email "unique"
+varchar name
+timestamp created_at
 }
-```
 
-User Response:
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "John Doe",
-  "createdAt": "2026-02-26T18:10:00Z"
+ORDERS {
+bigint id PK
+bigint user_id FK
+varchar status
+timestamp created_at
 }
+
+ORDER_ITEMS {
+bigint id PK
+bigint order_id FK
+bigint product_id FK
+int quantity
+decimal price_at_purchase
+}
+
+PRODUCTS {
+bigint id PK
+varchar sku "unique"
+varchar name
+decimal price
+int inventory_qty
+}
+
+USERS ||--o{ ORDERS : places
+ORDERS ||--o{ ORDER_ITEMS : contains
+PRODUCTS ||--o{ ORDER_ITEMS : referenced_by
 ```
 
-## ✅ Checkout Example
+OrderItem is modeled as a join entity to allow:
 
+- Quantity
+- Price snapshot at purchase time
+
+This enables proper historical accuracy and avoids pricing mutation issues.
+
+## Key Endpoints
+
+Create Order
 ```bash
-curl -X POST http://localhost:8080/orders/1/checkout
+POST /orders/user/{userId}
 ```
 
-Checkout response:
+Checkout Order
+```bash
+POST /orders/{orderId}/checkout
+```
+
+Add Item
+```bash
+POST /order-items?orderId=&productId=&quantity=
+```
+
+List Orders
+```bash
+GET /orders
+```
+
+## Example Checkout Response
+
 ```json
 {
   "id": 1,
@@ -176,41 +128,64 @@ Checkout response:
 }
 ```
 
-##  ❗API Error Handling
+## Error Handling
+Standardized error format:
 ```json
 {
-  "timestamp": "2026-02-26T18:15:00Z",
-  "status": 409,
-  "error": "Conflict",
-  "message": "Insufficient inventory. Have=1 requested=2",
-  "path": "/orders/1/items"
+"timestamp": "2026-03-01T01:15:00Z",
+"status": 400,
+"error": "Bad Request",
+"message": "Cannot checkout an empty order.",
+"path": "/orders/1/checkout"
 }
 ```
 
-## 🧪 Testing Strategy
+Business exceptions are translated via global exception handling.
+
+## Testing Strategy
 
 Integration Testing
-- Real PostgreSQL database via Testcontainers
-- @SpringBootTest
-- Transactional validation
-- Inventory side-effect assertion
-- Failure-path verification
-- Custom exception verification
+- Real PostgreSQL via Testcontainer
+- Full Spring context (@SpringBootTest)
+- Transaction validation
+- Side-effect verification
 
+Controller Testing
+- @WebMvcTest
+- Service mocking
+- HTTP contract verification
 
-```bash
+Run test:
+
+```json
 ./mvnw clean test
 ```
 
-## 📈 Roadmap
+Docker must be running.
 
--[x]Core domain modeling
--[x]DTO pattern
--[x]Global exception handling
--[x]Inventory enforcement
--[x]Integration testing
--[x]OpenAPI documentation
--[ ]REST endpoint refinement for adding items
--[ ]MockMvc controller tests
--[ ]Order checkout workflow
--[ ]Pagination & sorting
+## Tech Stack 
+- Java 21
+- Spring Boot 4
+- Spring Web
+- Spring Data JPA
+- Hibernate
+- PostgreSQL
+- Testcontainers
+- JUnit 5
+- Mockito
+- Lombok
+- Docker
+
+## What This Demonstrates
+- Understanding of layered backend architecture
+- Proper transaction management
+- Enforcement of domain invariants
+- Clean API contract design
+- Real database testing strategy
+- Production-style error handling
+
+## Future Enhancements
+- Pagination and sorting
+- Order total calculation
+- Authentication and authorization
+- CI pipeline integration
