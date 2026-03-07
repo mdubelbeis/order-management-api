@@ -40,14 +40,14 @@ public class OrderItemService {
 
         requireStatus(order, OrderStatus.NEW, "add items to");
 
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findByIdForUpdate(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found: " + productId));
 
         Integer current = product.getInventoryQty();
         int currentQty = (current == null) ? 0 : current;
 
         if (currentQty < quantity) {
-            throw new BadRequestException(
+            throw new ConflictException(
                     "Insufficient inventory. Have=" + currentQty + " requested=" + quantity
             );
         }

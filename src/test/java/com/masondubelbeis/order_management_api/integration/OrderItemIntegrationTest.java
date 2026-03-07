@@ -18,6 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.masondubelbeis.order_management_api.repository.OrderItemRepository;
 
@@ -135,7 +143,7 @@ class OrderItemIntegrationTest extends BaseIntegrationTest {
 
         Order finalO = o;
         Product finalP = p;
-        assertThrows(ConflictException.class, () -> orderItemService.addItem(finalO.getId(), finalP.getId(), 1));
+        assertThrows(BadRequestException.class, () -> orderItemService.addItem(finalO.getId(), finalP.getId(), 1));
 
         Product updated = productRepository.findById(p.getId()).orElseThrow();
         assertEquals(10, updated.getInventoryQty());
@@ -189,6 +197,102 @@ class OrderItemIntegrationTest extends BaseIntegrationTest {
         // Act + Assert
         Order finalO = o;
         assertThrows(NotFoundException.class, () -> orderItemService.addItem(finalO.getId(), 999999L, 1));
+    }
+
+    @Test
+    void shouldPreventOversellWhenTwoRequestsHitAtSameTime() throws Exception {
+        // Arrange: product with only 1 in stock
+        Product p = new Product();
+        p.setName("Race Product");
+        p.setSku("RACE-" + System.nanoTime());
+        p.setPrice(BigDecimal.valueOf(10));
+        p.setInventoryQty(1);
+        p = productRepository.save(p);
+
+        // Arrange: user 1 + order 1
+        User u1 = new User();
+        u1.setName("User One");
+        u1.setEmail("race1+" + System.nanoTime() + "@example.com");
+        u1 = userRepository.save(u1);
+
+        Order o1 = new Order();
+        o1.setStatus(OrderStatus.NEW);
+        o1.setUser(u1);
+        o1 = orderRepository.save(o1);
+
+        // Arrange: user 2 + order 2
+        User u2 = new User();
+        u2.setName("User Two");
+        u2.setEmail("race2+" + System.nanoTime() + "@example.com");
+        u2 = userRepository.save(u2);
+
+        Order o2 = new Order();
+        o2.setStatus(OrderStatus.NEW);
+        o2.setUser(u2);
+        o2 = orderRepository.save(o2);
+
+        long before = orderItemRepository.count();
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+
+        Long productId = p.getId();
+        Long order1Id = o1.getId();
+        Long order2Id = o2.getId();
+
+        Callable<String> task1 = () -> {
+            ready.countDown();
+            start.await();
+            try {
+                orderItemService.addItem(order1Id, productId, 1);
+                return "SUCCESS";
+            } catch (Exception e) {
+                return e.getClass().getSimpleName();
+            }
+        };
+
+        Callable<String> task2 = () -> {
+            ready.countDown();
+            start.await();
+            try {
+                orderItemService.addItem(order2Id, productId, 1);
+                return "SUCCESS";
+            } catch (Exception e) {
+                return e.getClass().getSimpleName();
+            }
+        };
+
+        Future<String> f1 = executor.submit(task1);
+        Future<String> f2 = executor.submit(task2);
+
+        ready.await();
+        start.countDown();
+
+        String r1 = f1.get();
+        String r2 = f2.get();
+
+        executor.shutdown();
+
+        // Assert: exactly one succeeds
+        long successCount = Stream.of(r1, r2)
+                .filter("SUCCESS"::equals)
+                .count();
+        assertEquals(1, successCount);
+
+        // Assert: exactly one fails due to inventory conflict
+        assertTrue(
+                (r1.equals("SUCCESS") && r2.equals("ConflictException")) ||
+                        (r2.equals("SUCCESS") && r1.equals("ConflictException"))
+        );
+
+        // Assert: inventory ends at 0, not negative / oversold
+        Product updated = productRepository.findById(productId).orElseThrow();
+        assertEquals(0, updated.getInventoryQty());
+
+        // Assert: only one new order item got created
+        long after = orderItemRepository.count();
+        assertEquals(before + 1, after);
     }
 
 }
