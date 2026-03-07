@@ -3,25 +3,23 @@ package com.masondubelbeis.order_management_api.dto.order;
 import com.masondubelbeis.order_management_api.domain.Order;
 import com.masondubelbeis.order_management_api.domain.OrderStatus;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class OrderResponse {
 
     private Long id;
     private OrderStatus status;
-    private Instant createdAt;
+    private LocalDateTime createdAt;
     private Long userId;
 
     public static OrderResponse from(Order o) {
         OrderResponse dto = new OrderResponse();
         dto.setId(o.getId());
         dto.setStatus(o.getStatus());
-        dto.setCreatedAt(Instant.from(o.getCreatedAt()));
+        dto.setCreatedAt(o.getCreatedAt());
         dto.setUserId(o.getUser().getId());
         return dto;
     }
-
-    // getters/setters...
 
     public Long getId() {
         return id;
@@ -39,11 +37,11 @@ public class OrderResponse {
         this.status = status;
     }
 
-    public Instant getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

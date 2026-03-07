@@ -4,6 +4,7 @@ import com.masondubelbeis.order_management_api.domain.Order;
 import com.masondubelbeis.order_management_api.domain.OrderItem;
 import com.masondubelbeis.order_management_api.domain.OrderStatus;
 import com.masondubelbeis.order_management_api.domain.Product;
+import com.masondubelbeis.order_management_api.dto.order.OrderResponse;
 import com.masondubelbeis.order_management_api.exception.BadRequestException;
 import com.masondubelbeis.order_management_api.exception.ConflictException;
 import com.masondubelbeis.order_management_api.exception.NotFoundException;
@@ -29,8 +30,7 @@ public class OrderItemService {
     }
 
     @Transactional
-    public void addItem(Long orderId, Long productId, int quantity) {
-
+    public OrderResponse addItem(Long orderId, Long productId, int quantity) {
         if (quantity <= 0) {
             throw new BadRequestException("quantity must be > 0");
         }
@@ -38,25 +38,23 @@ public class OrderItemService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
-        // Only allow items to be added to NEW orders
-        if (order.getStatus() != null && order.getStatus() != OrderStatus.NEW) {
-            throw new ConflictException("Cannot add items to order in status: " + order.getStatus());
-        }
+        requireStatus(order, OrderStatus.NEW, "add items to");
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found: " + productId));
 
-        int currentQty = (product.getInventoryQty() == null) ? 0 : product.getInventoryQty();
+        Integer current = product.getInventoryQty();
+        int currentQty = (current == null) ? 0 : current;
 
         if (currentQty < quantity) {
-            throw new ConflictException("Insufficient inventory. Have=" + currentQty + " requested=" + quantity);
+            throw new BadRequestException(
+                    "Insufficient inventory. Have=" + currentQty + " requested=" + quantity
+            );
         }
 
-        // decrement inventory
         product.setInventoryQty(currentQty - quantity);
         productRepository.save(product);
 
-        // create order item (price snapshot)
         OrderItem item = new OrderItem();
         item.setOrder(order);
         item.setProduct(product);
@@ -64,5 +62,18 @@ public class OrderItemService {
         item.setPriceAtPurchase(product.getPrice());
 
         orderItemRepository.save(item);
+
+        OrderResponse response = new OrderResponse();
+        response.setId(order.getId());
+        response.setStatus(order.getStatus());
+        response.setCreatedAt(order.getCreatedAt());
+        response.setUserId(order.getUser().getId());
+        return response;
+    }
+
+    private void requireStatus(Order order, OrderStatus expected, String action) {
+        if (order.getStatus() != expected) {
+            throw new BadRequestException("Cannot " + action + " order in status: " + order.getStatus());
+        }
     }
 }
