@@ -1,7 +1,17 @@
 # Order Management API
-Production-style REST API built with Spring Boot that models a real-world order lifecycle with transactional integrity, inventory enforcement, DTO separation, and structured error handling.
 
-This project demonstrates backend architectural discipline beyond simple CRUD operations.
+A production-style backend API for managing customers, orders, order items, and product inventory.
+
+This project was built to showcase my ability to design and implement clean backend systems using **Java, Spring Boot, PostgreSQL, Docker, and Testcontainers**. It reflects the kinds of patterns used in real applications: layered architecture, DTO-based APIs, validation, exception handling, transactional service logic, and automated testing.
+
+## Why this project stands out
+
+This is not just a basic CRUD demo. It demonstrates:
+- clean separation between controller, service, repository, and domain layers
+- relational data modeling across customers, products, orders, and order items
+- transactional workflows to preserve data integrity
+- request/response DTOs that protect API contracts
+- integration and controller tests backed by realistic infrastructure
 
 ## Overview
 The system manages:
