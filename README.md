@@ -2,7 +2,7 @@
 
 A production-style backend API for managing customers, orders, order items, and product inventory.
 
-This project was built to showcase my ability to design and implement clean backend systems using **Java, Spring Boot, PostgreSQL, Docker, and Testcontainers**. It reflects the kinds of patterns used in real applications: layered architecture, DTO-based APIs, validation, exception handling, transactional service logic, and automated testing.
+This project was built to showcase my ability to design and implement clean backend systems using **Java, Spring Boot, PostgreSQL, Docker, and testing**. It reflects the kinds of patterns used in real applications: layered architecture, DTO-based APIs, validation, exception handling, transactional service logic, and automated testing.
 
 ## Why this project stands out
 
